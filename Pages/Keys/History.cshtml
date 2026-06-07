@@ -1,0 +1,92 @@
+﻿@page
+@model KeyManagment.Pages.Keys.HistoryModel
+@{
+    ViewData["Title"] = "تاریخچه کلیدها";
+}
+
+<h2>تاریخچه تحویل کلیدها</h2>
+
+<div style="background:#f8f9fa; padding:20px; border-radius:8px; margin-bottom:20px;">
+    <form method="get">
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
+            <div>
+                <label class="form-label">جستجو بر اساس نام</label>
+                <input asp-for="SearchName" class="form-control" placeholder="نام کارمند یا حراست" />
+            </div>
+            <div>
+                <label class="form-label">کد کلید</label>
+                <input asp-for="SearchKeyCode" class="form-control" placeholder="مثلاً A1-F1" />
+            </div>
+            <div>
+                <label class="form-label">وضعیت</label>
+                <select asp-for="StatusFilter" class="form-control">
+                    <option value="">همه</option>
+                    <option value="out">خارج‌شده</option>
+                    <option value="returned">بازگشت‌داده‌شده</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">از تاریخ</label>
+                <input asp-for="FromDate" type="date" class="form-control" />
+            </div>
+            <div>
+                <label class="form-label">تا تاریخ</label>
+                <input asp-for="ToDate" type="date" class="form-control" />
+            </div>
+            <div style="display:flex; align-items:flex-end; gap:8px;">
+                <button type="submit" class="btn btn-primary">جستجو</button>
+                <a asp-page="/Keys/History" class="btn btn-secondary">پاک کردن</a>
+                <a asp-page="/Keys/History" asp-page-handler="Export"
+                   asp-route-SearchName="@Model.SearchName"
+                   asp-route-SearchKeyCode="@Model.SearchKeyCode"
+                   asp-route-StatusFilter="@Model.StatusFilter"
+                   class="btn btn-success">⬇ خروجی Excel</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<p class="text-muted">تعداد نتایج: <strong>@Model.Handovers.Count</strong> رکورد</p>
+
+<div style="overflow-x:auto;">
+    <table class="table table-bordered table-sm table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>کد کلید</th>
+                <th>اتاق</th>
+                <th>ساختمان</th>
+                <th>تحویل‌گیرنده</th>
+                <th>واحد</th>
+                <th>حراست</th>
+                <th>زمان تحویل</th>
+                <th>زمان بازگشت</th>
+                <th>وضعیت</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var h in Model.Handovers)
+            {
+                <tr class="@(h.ReturnTime == null ? "table-warning" : "")">
+                    <td><strong>@h.Key.KeyCode</strong></td>
+                    <td>@h.Key.RoomName</td>
+                    <td>@h.Key.Building.Name — طبقه @h.Key.Floor</td>
+                    <td>@h.ReceiverName</td>
+                    <td>@h.ReceiverDepartment</td>
+                    <td>@h.GuardName</td>
+                    <td>@h.CheckoutTime.ToString("yyyy/MM/dd HH:mm")</td>
+                    <td>@(h.ReturnTime?.ToString("yyyy/MM/dd HH:mm") ?? "—")</td>
+                    <td>
+                        @if (h.ReturnTime == null)
+                        {
+                            <span class="badge bg-danger">خارج</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">بازگشت</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

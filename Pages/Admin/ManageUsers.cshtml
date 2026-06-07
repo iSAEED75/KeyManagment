@@ -1,0 +1,60 @@
+﻿@page
+@model KeyManagment.Pages.Admin.ManageUsersModel
+@{
+    ViewData["Title"] = "مدیریت کاربران";
+}
+
+<h2>مدیریت کاربران</h2>
+
+<!-- فرم افزودن کاربر جدید -->
+<div style="background:#f8f9fa; padding:20px; border-radius:8px; margin-bottom:30px;">
+    <h4>افزودن کاربر جدید</h4>
+    <form method="post" asp-page-handler="Create">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div>
+                <label>نام کامل</label>
+                <input asp-for="NewFullName" class="form-control" required />
+            </div>
+            <div>
+                <label>ایمیل (نام کاربری)</label>
+                <input asp-for="NewEmail" type="email" class="form-control" required />
+            </div>
+            <div>
+                <label>رمز عبور</label>
+                <input asp-for="NewPassword" type="password" class="form-control" required />
+            </div>
+            <div>
+                <label>واحد / دپارتمان</label>
+                <input asp-for="NewDepartment" class="form-control" />
+            </div>
+            <div>
+                <label>نقش</label>
+                <select asp-for="NewRole" class="form-control">
+                    <option value="User">کارمند عادی</option>
+                    <option value="Guard">حراست</option>
+                    <option value="Admin">مدیر</option>
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">افزودن کاربر</button>
+    </form>
+</div>
+
+<!-- لیست کاربران -->
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ایمیل</th>
+            <th>نقش</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model.Users)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>@user.Role</td>
+            </tr>
+        }
+    </tbody>
+</table>

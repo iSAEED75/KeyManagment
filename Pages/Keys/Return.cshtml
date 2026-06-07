@@ -1,0 +1,57 @@
+﻿@page
+@model KeyManagment.Pages.Keys.ReturnModel
+@{
+    ViewData["Title"] = "بازگشت کلید";
+}
+
+<h2>کلیدهای خارج‌شده</h2>
+
+@if (Model.SuccessMessage != null)
+{
+    <div class="alert alert-success">@Model.SuccessMessage</div>
+}
+
+@if (!Model.ActiveHandovers.Any())
+{
+    <div class="alert alert-info">همه کلیدها موجود هستند.</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>کد کلید</th>
+                <th>اتاق</th>
+                <th>ساختمان</th>
+                <th>تحویل‌گیرنده</th>
+                <th>واحد</th>
+                <th>زمان تحویل</th>
+                <th>عملیات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var h in Model.ActiveHandovers)
+            {
+                <tr>
+                    <td><strong>@h.Key.KeyCode</strong></td>
+                    <td>@h.Key.RoomName</td>
+                    <td>@h.Key.Building.Name، طبقه @h.Key.Floor</td>
+                    <td>@h.ReceiverName</td>
+                    <td>@h.ReceiverDepartment</td>
+                    <td>@h.CheckoutTime.ToString("yyyy/MM/dd HH:mm")</td>
+                    <td>
+                        <form method="post">
+                            <input type="hidden" name="handoverId" value="@h.Id" />
+                            <button type="submit"
+                                    asp-page-handler="Return"
+                                    class="btn btn-sm btn-warning"
+                                    onclick="return confirm('بازگشت کلید تأیید می‌شود؟')">
+                                بازگشت کلید
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

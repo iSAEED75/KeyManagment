@@ -1,0 +1,122 @@
+﻿@page
+@model KeyManagment.Pages.Admin.ManageKeysModel
+@{
+    ViewData["Title"] = "مدیریت کلیدها";
+}
+
+<h2>مدیریت کلیدها و ساختمان‌ها</h2>
+
+@if (Model.SuccessMessage != null)
+{
+    <div class="alert alert-success">@Model.SuccessMessage</div>
+}
+
+<!-- افزودن ساختمان -->
+<div style="background:#f8f9fa; padding:20px; border-radius:8px; margin-bottom:20px;">
+    <h5>افزودن ساختمان جدید</h5>
+    <form method="post">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div>
+                <label class="form-label">نام ساختمان</label>
+                <input asp-for="NewBuildingName" class="form-control" required />
+            </div>
+            <div>
+                <label class="form-label">توضیحات</label>
+                <input asp-for="NewBuildingDesc" class="form-control" />
+            </div>
+        </div>
+        <button type="submit" asp-page-handler="AddBuilding"
+                class="btn btn-secondary mt-2">
+            افزودن ساختمان
+        </button>
+    </form>
+</div>
+
+<!-- افزودن کلید -->
+<div style="background:#e8f4f8; padding:20px; border-radius:8px; margin-bottom:20px;">
+    <h5>افزودن کلید جدید</h5>
+    <form method="post">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div>
+                <label class="form-label">کد کلید</label>
+                <input asp-for="NewKeyCode" class="form-control"
+                       placeholder="مثلاً A1-F1-R101" required />
+            </div>
+            <div>
+                <label class="form-label">نام اتاق</label>
+                <input asp-for="NewRoomName" class="form-control" required />
+            </div>
+            <div>
+                <label class="form-label">طبقه</label>
+                <input asp-for="NewFloor" type="number" class="form-control" required />
+            </div>
+            <div>
+                <label class="form-label">ساختمان</label>
+                <select asp-for="NewBuildingId" class="form-control" required>
+                    <option value="">-- انتخاب کنید --</option>
+                    @foreach (var b in Model.Buildings)
+                    {
+                        <option value="@b.Id">@b.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <button type="submit" asp-page-handler="AddKey"
+                class="btn btn-primary mt-2">
+            افزودن کلید
+        </button>
+    </form>
+</div>
+
+<!-- لیست کلیدها -->
+<h5>لیست کلیدها (@Model.Keys.Count عدد)</h5>
+<table class="table table-bordered table-sm table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>کد کلید</th>
+            <th>اتاق</th>
+            <th>ساختمان</th>
+            <th>طبقه</th>
+            <th>وضعیت</th>
+            <th>عملیات</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var k in Model.Keys)
+        {
+            <tr>
+                <td><strong>@k.KeyCode</strong></td>
+                <td>@k.RoomName</td>
+                <td>@k.Building.Name</td>
+                <td>@k.Floor</td>
+                <td>
+                    @if (k.IsAvailable)
+                    {
+                        <span class="badge bg-success">موجود</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">خارج‌شده</span>
+                    }
+                </td>
+                <td>
+                    @if (k.IsAvailable)
+                    {
+                        <form method="post" style="display:inline;">
+                            <input type="hidden" name="keyId" value="@k.Id" />
+                            <button type="submit" asp-page-handler="DeleteKey"
+                                    class="btn btn-sm btn-danger"
+                                    onclick="return confirm('حذف شود؟')">
+                                حذف
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="text-muted">در دست کاربر</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

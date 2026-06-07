@@ -1,0 +1,53 @@
+﻿@page
+@model KeyManagment.Pages.Keys.CheckoutModel
+@{
+    ViewData["Title"] = "تحویل کلید";
+}
+
+<h2>تحویل کلید</h2>
+
+@if (Model.SuccessMessage != null)
+{
+    <div class="alert alert-success">@Model.SuccessMessage</div>
+}
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div style="background:#f8f9fa; padding:20px; border-radius:8px;">
+    <form method="post">
+        <div class="mb-3">
+            <label class="form-label">انتخاب کلید</label>
+            <select asp-for="SelectedKeyId" class="form-control" required>
+                <option value="">-- کلید را انتخاب کنید --</option>
+                @foreach (var key in Model.AvailableKeys)
+                {
+                    <option value="@key.Id">
+                        [@key.KeyCode] @key.RoomName —
+                        @key.Building.Name، طبقه @key.Floor
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">تحویل به</label>
+            <select asp-for="SelectedUserId" class="form-control" required>
+                <option value="">-- کارمند را انتخاب کنید --</option>
+                @foreach (var user in Model.AllUsers)
+                {
+                    <option value="@user.Id">@user.Email</option>
+                }
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">توضیحات (اختیاری)</label>
+            <input asp-for="Notes" class="form-control"
+                   placeholder="مثلاً: برای جلسه فوری" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">ثبت تحویل کلید</button>
+    </form>
+</div>
