@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KeyManagment.Pages.Keys
 {
-    [Authorize(Roles = "Guard,Admin")]
+    [Authorize(Roles = "Guard,Admin,SecurityOfficer")]
     public class CheckoutModel : PageModel
     {
         private readonly ApplicationDbContext _db;

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KeyManagment.Pages.Keys
 {
-    [Authorize(Roles = "Guard,Admin")]
+    [Authorize(Roles = "Guard,Admin,SecurityOfficer")]
     public class ReturnModel : PageModel
     {
         private readonly ApplicationDbContext _db;

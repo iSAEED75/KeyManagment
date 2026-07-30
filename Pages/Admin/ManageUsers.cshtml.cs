@@ -199,7 +199,8 @@ namespace KeyManagment.Pages.Admin
             ws.Cell(4, 1).Value = "نقش‌های مجاز:";
             ws.Cell(4, 2).Value = "User = کارمند عادی";
             ws.Cell(5, 2).Value = "Guard = حراست";
-            ws.Cell(6, 2).Value = "Admin = مدیر";
+            ws.Cell(6, 2).Value = "SecurityOfficer = افسر حراست";
+            ws.Cell(7, 2).Value = "Admin = مدیر";
 
             ws.Columns().AdjustToContents();
 

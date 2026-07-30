@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/KeyManagment.styles.css" asp-append-version="true" />
     <!-- آیکون‌های Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/lib/fontawesome/css/all.min.css" />
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -151,13 +151,17 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
 
-                        @if (User.IsInRole("Admin"))
+                        @if (User.IsInRole("Admin") || User.IsInRole("SecurityOfficer"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link" asp-page="/Keys/Dashboard">
                                     <i class="fa-solid fa-gauge-high"></i> داشبورد
                                 </a>
                             </li>
+                        }
+
+                        @if (User.IsInRole("Admin"))
+                        {
                             <li class="nav-item">
                                 <a class="nav-link" asp-page="/Keys/History">
                                     <i class="fa-solid fa-clock-rotate-left"></i> تاریخچه
@@ -175,7 +179,7 @@
                             </li>
                         }
 
-                        @if (User.IsInRole("Guard") || User.IsInRole("Admin"))
+                        @if (User.IsInRole("Guard") || User.IsInRole("Admin") || User.IsInRole("SecurityOfficer"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link" asp-page="/Keys/Checkout">
@@ -209,6 +213,10 @@
                             @if (User.IsInRole("Admin"))
                             {
                                 <span class="badge bg-warning text-dark">مدیر</span>
+                            }
+                            else if (User.IsInRole("SecurityOfficer"))
+                            {
+                                <span class="badge bg-primary">افسر حراست</span>
                             }
                             else if (User.IsInRole("Guard"))
                             {

@@ -1,40 +1,67 @@
-﻿@page
+@page
 @model KeyManagment.Pages.Keys.DashboardModel
 @{
     ViewData["Title"] = "داشبورد مدیر";
 }
 
-<h2>داشبورد مدیریت کلید</h2>
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+    <h2 class="mb-0"><i class="fa-solid fa-gauge-high text-primary"></i> داشبورد مدیریت کلید</h2>
+    <span class="text-muted small"><i class="fa-regular fa-clock"></i> آخرین بروزرسانی: @DateTime.Now.ToShamsiWithTime()</span>
+</div>
 
 <!-- آمار کلی -->
-<div style="display:grid; grid-template-columns:repeat(4,1fr); gap:15px; margin-bottom:30px;">
-    <div style="background:#0d6efd; color:white; padding:20px; border-radius:8px; text-align:center;">
-        <h3>@Model.TotalKeys</h3>
-        <p>کل کلیدها</p>
+<div class="stats-grid">
+    <div class="stat-card">
+        <i class="fa-solid fa-key stat-icon"></i>
+        <p class="stat-value" data-count="@Model.TotalKeys">0</p>
+        <p class="stat-label">کل کلیدها</p>
     </div>
-    <div style="background:#198754; color:white; padding:20px; border-radius:8px; text-align:center;">
-        <h3>@Model.AvailableKeys</h3>
-        <p>موجود</p>
+    <div class="stat-card">
+        <i class="fa-solid fa-circle-check stat-icon"></i>
+        <p class="stat-value" data-count="@Model.AvailableKeys">0</p>
+        <p class="stat-label">موجود</p>
     </div>
-    <div style="background:#fd7e14; color:white; padding:20px; border-radius:8px; text-align:center;">
-        <h3>@Model.CheckedOutKeys</h3>
-        <p>خارج‌شده</p>
+    <div class="stat-card">
+        <i class="fa-solid fa-right-from-bracket stat-icon"></i>
+        <p class="stat-value" data-count="@Model.CheckedOutKeys">0</p>
+        <p class="stat-label">خارج‌شده</p>
     </div>
-    <div style="background:#dc3545; color:white; padding:20px; border-radius:8px; text-align:center;">
-        <h3>@Model.ExpiredKeys</h3>
-        <p>⚠ منقضی شده</p>
+    <div class="stat-card expired-card">
+        <i class="fa-solid fa-triangle-exclamation stat-icon"></i>
+        <p class="stat-value" data-count="@Model.ExpiredKeys">0</p>
+        <p class="stat-label">⚠ منقضی شده</p>
+    </div>
+</div>
+
+<!-- چارت‌ها -->
+<div class="charts-grid">
+    <div class="chart-card">
+        <h6><i class="fa-solid fa-chart-pie text-primary"></i> وضعیت کلی کلیدها</h6>
+        <canvas id="statusChart"></canvas>
+    </div>
+    <div class="chart-card">
+        <h6><i class="fa-solid fa-building text-warning"></i> کلیدهای خارج‌شده به تفکیک ساختمان</h6>
+        <canvas id="buildingChart"></canvas>
+    </div>
+    <div class="chart-card">
+        <h6><i class="fa-solid fa-sitemap text-info"></i> کلیدهای خارج‌شده به تفکیک واحد</h6>
+        <canvas id="deptChart"></canvas>
+    </div>
+    <div class="chart-card">
+        <h6><i class="fa-solid fa-chart-line text-success"></i> روند تحویل کلید (۷ روز اخیر)</h6>
+        <canvas id="trendChart"></canvas>
     </div>
 </div>
 
 <!-- کلیدهای منقضی شده -->
 @if (Model.ExpiredHandovers.Any())
 {
-    <div style="border: 2px solid #dc3545; border-radius:8px; margin-bottom:30px; overflow:hidden;">
+    <div class="expired-glow" style="border: 2px solid #dc3545; border-radius:12px; margin-bottom:30px; overflow:hidden;">
         <div style="background:#dc3545; color:white; padding:12px 20px;">
-            <h5 style="margin:0;">⚠ کلیدهای منقضی شده (@Model.ExpiredHandovers.Count عدد)</h5>
+            <h5 style="margin:0;"><i class="fa-solid fa-triangle-exclamation"></i> کلیدهای منقضی شده (@Model.ExpiredHandovers.Count عدد)</h5>
             <small>این کلیدها از مهلت مقرر گذشته‌اند و باید بازگردانده شوند</small>
         </div>
-        <table class="table table-bordered mb-0">
+        <table class="table table-bordered mb-0 dash-table">
             <thead class="table-danger">
                 <tr>
                     <th>کد کلید</th>
@@ -44,24 +71,26 @@
                     <th>تحویل‌دهنده</th>
                     <th>زمان تحویل</th>
                     <th>مهلت بازگشت</th>
-                    <th> تأخیر</th>
+                    <th>تأخیر</th>
                 </tr>
             </thead>
             <tbody>
+                @{ int ei = 0; }
                 @foreach (var h in Model.ExpiredHandovers)
                 {
+                    ei++;
                     var delay = DateTime.Now - h.ExpiryTime!.Value;
-                    <tr class="table-danger">
+                    <tr class="table-danger" style="animation-delay:@(ei * 40)ms">
                         <td><strong>@h.Key.KeyCode</strong></td>
                         <td>@h.Key.RoomName — @h.Key.Building.Name</td>
                         <td>@h.ReceiverName</td>
                         <td>@h.ReceiverDepartment</td>
                         <td>@h.GuardName</td>
-                        <td>@h.CheckoutTime.ToString("HH:mm — yyyy/MM/dd")</td>
-                        <td>@h.ExpiryTime?.ToString("HH:mm — yyyy/MM/dd")</td>
+                        <td>@h.CheckoutTime.ToShamsiWithTime()</td>
+                        <td>@h.ExpiryTime?.ToShamsiWithTime()</td>
                         <td>
                             <span class="badge bg-danger">
-                                ساعت@((int)delay.TotalHours) و دقیقه تأخیر @delay.Minutes
+                                @((int)delay.TotalHours) ساعت و @(delay.Minutes) دقیقه تأخیر
                             </span>
                         </td>
                     </tr>
@@ -72,14 +101,29 @@
 }
 
 <!-- کلیدهای فعال (منقضی نشده) -->
-<h5>کلیدهای فعلاً خارج‌شده (@Model.ActiveHandovers.Count عدد)</h5>
+<div class="section-title"><i class="fa-solid fa-list-check text-warning"></i> کلیدهای فعلاً خارج‌شده (@Model.ActiveHandovers.Count عدد)</div>
+
 @if (!Model.ActiveHandovers.Any())
 {
     <div class="alert alert-info">هیچ کلید فعالی خارج نشده.</div>
 }
 else
 {
-    <table class="table table-bordered mb-4">
+    <div class="filter-bar">
+        <div class="input-group input-group-sm" style="max-width:260px;">
+            <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <input id="searchBox" type="text" class="form-control" placeholder="جستجو کد کلید یا تحویل‌گیرنده..." />
+        </div>
+        <select id="buildingFilter" class="form-select form-select-sm" style="max-width:200px">
+            <option value="">همه ساختمان‌ها</option>
+            @foreach (var b in Model.BuildingNames)
+            {
+                <option value="@b">@b</option>
+            }
+        </select>
+    </div>
+
+    <table id="activeTable" class="table table-bordered mb-4 dash-table">
         <thead class="table-warning">
             <tr>
                 <th>کد کلید</th>
@@ -93,9 +137,14 @@ else
             </tr>
         </thead>
         <tbody>
+            @{ int ai = 0; }
             @foreach (var h in Model.ActiveHandovers)
             {
-                <tr>
+                ai++;
+                <tr style="animation-delay:@(ai * 30)ms"
+                    data-keycode="@h.Key.KeyCode.ToLower()"
+                    data-receiver="@h.ReceiverName.ToLower()"
+                    data-building="@h.Key.Building.Name">
                     <td><strong>@h.Key.KeyCode</strong></td>
                     <td>@h.Key.RoomName — @h.Key.Building.Name</td>
                     <td>@h.ReceiverName</td>
@@ -104,9 +153,11 @@ else
                     <td>@h.CheckoutTime.ToShamsiWithTime()</td>
                     <td>@h.ExpiryTime.ToShamsiWithTime()</td>
                     <td>
-                        <span class="timer badge bg-warning text-dark"
+                        <span class="timer-wrap"
+                              data-checkout="@(((DateTimeOffset)h.CheckoutTime).ToUnixTimeMilliseconds())"
                               data-expiry="@(((DateTimeOffset)h.ExpiryTime!.Value).ToUnixTimeMilliseconds())">
-                            در حال محاسبه...
+                            <span class="timer badge bg-warning text-dark">در حال محاسبه...</span>
+                            <span class="timer-progress"><span class="timer-progress-fill"></span></span>
                         </span>
                     </td>
                 </tr>
@@ -115,61 +166,189 @@ else
     </table>
 }
 
-<!-- تاریخچه اخیر -->
-
-@* <h5 class="mt-2"> تحویل اخیر بازگشت‌داده‌شده</h5>
-<table class="table table-sm table-striped">
-    <thead class="table-dark">
-        <tr>
-            <th>کد کلید</th>
-            <th>تحویل‌گیرنده</th>
-            <th>زمان تحویل</th>
-            <th>زمان بازگشت</th>
-        </tr>
-    </thead>
-    <tbody>
+<!-- آخرین فعالیت -->
+@if (Model.RecentHistory.Any())
+{
+    <div class="section-title"><i class="fa-solid fa-clock-rotate-left text-secondary"></i> آخرین کلیدهای بازگردانده‌شده</div>
+    <ul class="activity-list">
+        @{ int ri = 0; }
         @foreach (var h in Model.RecentHistory)
         {
-            <tr>
-                <td>@h.Key.KeyCode</td>
-                <td>@h.ReceiverName</td>
-                <td>@h.CheckoutTime.ToString("HH:mm — MM/dd")</td>
-                <td>@h.ReturnTime?.ToString("HH:mm — MM/dd")</td>
-            </tr>
+            ri++;
+            <li style="animation-delay:@(ri * 50)ms">
+                <span class="activity-icon"><i class="fa-solid fa-rotate-left"></i></span>
+                <div>
+                    <strong>@h.Key.KeyCode</strong> — @h.Key.RoomName (@h.Key.Building.Name)
+                    <br />
+                    <small class="text-muted">
+                        تحویل‌گیرنده: @h.ReceiverName &nbsp;|&nbsp; بازگشت: @h.ReturnTime.ToShamsiWithTime()
+                    </small>
+                </div>
+            </li>
         }
-    </tbody>
-</table> *@
+    </ul>
+}
 
-<!-- تایمر -->
-<script>
-    function updateTimers() {
-        document.querySelectorAll('.timer').forEach(function (el) {
-            var expiryMs = parseInt(el.dataset.expiry);
-            var now = Date.now();
-            var diff = expiryMs - now;
-
-            if (diff <= 0) {
-                el.className = 'badge bg-danger';
-                el.textContent = '⚠ منقضی شده';
-                return;
+@section Scripts {
+    <script src="~/lib/chartjs/chart.umd.min.js"></script>
+    <script>
+        // ---------- شمارش انیمیشنی کارت‌های آمار ----------
+        document.querySelectorAll('.stat-value').forEach(function (el) {
+            var target = parseInt(el.dataset.count, 10) || 0;
+            var duration = 900;
+            var start = null;
+            function step(ts) {
+                if (!start) start = ts;
+                var progress = Math.min((ts - start) / duration, 1);
+                var eased = 1 - Math.pow(1 - progress, 3);
+                el.textContent = Math.round(eased * target);
+                if (progress < 1) requestAnimationFrame(step);
+                else el.textContent = target;
             }
+            requestAnimationFrame(step);
+        });
 
-            var hours = Math.floor(diff / 3600000);
-            var minutes = Math.floor((diff % 3600000) / 60000);
-            var seconds = Math.floor((diff % 60000) / 1000);
+        // ---------- چارت‌ها ----------
+        var statusData = @Html.Raw(Model.StatusChartJson);
+        var buildingData = @Html.Raw(Model.BuildingChartJson);
+        var deptData = @Html.Raw(Model.DeptChartJson);
+        var trendData = @Html.Raw(Model.TrendChartJson);
 
-            el.textContent = hours + ':' +
-                String(minutes).padStart(2, '0') + ':' +
-                String(seconds).padStart(2, '0') + ' مانده';
+        Chart.defaults.font.family = "'Segoe UI', Tahoma, sans-serif";
 
-            if (diff < 1800000) {
-                el.className = 'timer badge bg-danger';
-            } else {
-                el.className = 'timer badge bg-warning text-dark';
+        new Chart(document.getElementById('statusChart'), {
+            type: 'doughnut',
+            data: {
+                labels: statusData.labels,
+                datasets: [{
+                    data: statusData.values,
+                    backgroundColor: ['#198754', '#fd7e14', '#dc3545'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                plugins: { legend: { position: 'bottom' } },
+                animation: { animateScale: true, animateRotate: true }
             }
         });
-    }
 
-    updateTimers();
-    setInterval(updateTimers, 1000);
-</script>
+        new Chart(document.getElementById('buildingChart'), {
+            type: 'bar',
+            data: {
+                labels: buildingData.labels,
+                datasets: [{
+                    label: 'تعداد کلید خارج‌شده',
+                    data: buildingData.values,
+                    backgroundColor: '#0d6efd',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+        });
+
+        new Chart(document.getElementById('deptChart'), {
+            type: 'bar',
+            data: {
+                labels: deptData.labels,
+                datasets: [{
+                    label: 'تعداد',
+                    data: deptData.values,
+                    backgroundColor: '#6f42c1',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+        });
+
+        new Chart(document.getElementById('trendChart'), {
+            type: 'line',
+            data: {
+                labels: trendData.labels,
+                datasets: [{
+                    label: 'تعداد تحویل',
+                    data: trendData.values,
+                    borderColor: '#20c997',
+                    backgroundColor: 'rgba(32,201,151,0.15)',
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+        });
+
+        // ---------- تایمر و نوار پیشرفت زمان باقیمانده ----------
+        function updateTimers() {
+            document.querySelectorAll('.timer-wrap').forEach(function (wrap) {
+                var checkoutMs = parseInt(wrap.dataset.checkout, 10);
+                var expiryMs = parseInt(wrap.dataset.expiry, 10);
+                var now = Date.now();
+                var total = expiryMs - checkoutMs;
+                var elapsed = now - checkoutMs;
+                var remaining = expiryMs - now;
+
+                var badge = wrap.querySelector('.timer');
+                var fill = wrap.querySelector('.timer-progress-fill');
+                var percent = Math.min(100, Math.max(0, (elapsed / total) * 100));
+                fill.style.width = percent + '%';
+
+                if (remaining <= 0) {
+                    badge.className = 'timer badge bg-danger';
+                    badge.textContent = '⚠ منقضی شده';
+                    fill.style.background = '#dc3545';
+                    return;
+                }
+
+                var hours = Math.floor(remaining / 3600000);
+                var minutes = Math.floor((remaining % 3600000) / 60000);
+                var seconds = Math.floor((remaining % 60000) / 1000);
+
+                badge.textContent = hours + ':' +
+                    String(minutes).padStart(2, '0') + ':' +
+                    String(seconds).padStart(2, '0') + ' مانده';
+
+                if (remaining < 1800000) {
+                    badge.className = 'timer badge bg-danger';
+                    fill.style.background = 'linear-gradient(90deg,#fd7e14,#dc3545)';
+                } else {
+                    badge.className = 'timer badge bg-warning text-dark';
+                    fill.style.background = 'linear-gradient(90deg,#20c997,#198754)';
+                }
+            });
+        }
+        updateTimers();
+        setInterval(updateTimers, 1000);
+
+        // ---------- جستجو و فیلتر جدول کلیدهای خارج‌شده ----------
+        var searchBox = document.getElementById('searchBox');
+        var buildingFilter = document.getElementById('buildingFilter');
+        var activeTable = document.getElementById('activeTable');
+
+        function applyFilter() {
+            if (!activeTable) return;
+            var term = (searchBox.value || '').trim().toLowerCase();
+            var building = buildingFilter.value;
+            activeTable.querySelectorAll('tbody tr').forEach(function (row) {
+                var keycode = row.dataset.keycode || '';
+                var receiver = row.dataset.receiver || '';
+                var rowBuilding = row.dataset.building || '';
+                var matchesTerm = !term || keycode.includes(term) || receiver.includes(term);
+                var matchesBuilding = !building || rowBuilding === building;
+                row.style.display = (matchesTerm && matchesBuilding) ? '' : 'none';
+            });
+        }
+
+        if (searchBox) searchBox.addEventListener('input', applyFilter);
+        if (buildingFilter) buildingFilter.addEventListener('change', applyFilter);
+    </script>
+}

@@ -1,0 +1,207 @@
+/* ---------- کارت‌های آماری ---------- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 26px;
+}
+
+.stat-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 14px;
+    padding: 22px 20px;
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    opacity: 0;
+    transform: translateY(16px);
+    animation: statIn 0.5s ease forwards;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.stat-card:nth-child(1) { animation-delay: .05s; background: linear-gradient(135deg,#0d6efd,#0a58ca); }
+.stat-card:nth-child(2) { animation-delay: .15s; background: linear-gradient(135deg,#20c997,#198754); }
+.stat-card:nth-child(3) { animation-delay: .25s; background: linear-gradient(135deg,#fd9843,#fd7e14); }
+.stat-card:nth-child(4) { animation-delay: .35s; background: linear-gradient(135deg,#ff6b6b,#dc3545); }
+
+@keyframes statIn {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.stat-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 26px rgba(0,0,0,0.22);
+}
+
+.stat-card .stat-icon {
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    font-size: 1.8rem;
+    opacity: .35;
+}
+
+.stat-card .stat-value {
+    font-size: 2.1rem;
+    font-weight: 800;
+    margin: 0;
+}
+
+.stat-card .stat-label {
+    margin: 4px 0 0;
+    opacity: .92;
+    font-size: .92rem;
+}
+
+.stat-card.expired-card .stat-value {
+    animation: pulseNum 1.6s ease-in-out infinite;
+}
+
+@keyframes pulseNum {
+    0%, 100% { text-shadow: 0 0 0 rgba(255,255,255,0); }
+    50% { text-shadow: 0 0 14px rgba(255,255,255,.85); }
+}
+
+/* ---------- چارت‌ها ---------- */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    margin-bottom: 30px;
+}
+
+.chart-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    opacity: 0;
+    transform: translateY(16px);
+    animation: statIn .5s ease forwards;
+    animation-delay: .3s;
+}
+
+.chart-card h6 {
+    margin: 0 0 12px;
+    font-weight: 700;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chart-card canvas {
+    max-height: 240px;
+}
+
+/* ---------- نوار فیلتر ---------- */
+.filter-bar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+/* ---------- جداول ---------- */
+.dash-table tbody tr {
+    opacity: 0;
+    transform: translateY(8px);
+    animation: rowIn .4s ease forwards;
+}
+
+@keyframes rowIn {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- نوار پیشرفت زمان باقیمانده ---------- */
+.timer-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 130px;
+}
+
+.timer-progress {
+    display: block;
+    height: 6px;
+    background: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.timer-progress-fill {
+    display: block;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg,#20c997,#198754);
+    transition: width .6s ease, background .6s ease;
+}
+
+/* ---------- درخشش کلیدهای منقضی ---------- */
+.expired-glow {
+    animation: glow 1.4s ease-in-out infinite;
+}
+
+@keyframes glow {
+    0%, 100% { box-shadow: 0 0 0 rgba(220,53,69,0); }
+    50% { box-shadow: 0 0 14px rgba(220,53,69,.55); }
+}
+
+/* ---------- عنوان بخش‌ها ---------- */
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    margin: 26px 0 12px;
+    font-size: 1.05rem;
+}
+
+/* ---------- فهرست آخرین فعالیت ---------- */
+.activity-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.activity-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f8f9fa;
+    margin-bottom: 8px;
+    opacity: 0;
+    transform: translateX(12px);
+    animation: rowInX .4s ease forwards;
+    transition: background .2s ease;
+}
+
+.activity-list li:hover {
+    background: #eef2f5;
+}
+
+@keyframes rowInX {
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.activity-list .activity-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #198754;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: .9rem;
+}
+
+/* ---------- واکنش‌گرایی ---------- */
+@media (max-width: 900px) {
+    .stats-grid { grid-template-columns: repeat(2,1fr); }
+    .charts-grid { grid-template-columns: 1fr; }
+}

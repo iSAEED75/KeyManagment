@@ -78,6 +78,7 @@
                 <select asp-for="NewRole" class="form-control">
                     <option value="User">کارمند عادی</option>
                     <option value="Guard">حراست</option>
+                    <option value="SecurityOfficer">افسر حراست</option>
                     <option value="Admin">مدیر</option>
                 </select>
             </div>
@@ -113,6 +114,10 @@
                     @if (user.Role == "Admin")
                     {
                         <span class="badge bg-danger">مدیر</span>
+                    }
+                    else if (user.Role == "SecurityOfficer")
+                    {
+                        <span class="badge bg-primary">افسر حراست</span>
                     }
                     else if (user.Role == "Guard")
                     {
