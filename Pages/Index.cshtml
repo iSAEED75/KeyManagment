@@ -1,10 +1,83 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "سیستم مدیریت کلید";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- بخش اصلی صفحه -->
+<div style="
+    background-image: url('/images/hero.jpg');
+    background-size: cover;
+    background-position: center;
+    height: 500px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+    position: relative;">
+
+    <!-- لایه تیره روی عکس -->
+    <div style="
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        border-radius: 12px;">
+    </div>
+
+    <!-- متن روی عکس -->
+    <div style="position: relative; text-align: center; color: white;">
+        <h1 style="font-size: 2.5rem; font-weight: bold;">
+             سیستم مدیریت کلیدهای اضطراری مجتمع
+        </h1>
+        <h1 style="font-size: 2.5rem; font-weight: bold;">
+            حراست پتروشیمی نوری
+        </h1>
+        <p style="font-size: 1.2rem; margin-bottom: 20px;">
+            ساخته شده توسط: سعید عرب
+        </p>
+        @if (!User.Identity!.IsAuthenticated)
+        {
+            <a asp-page="/Account/Login" asp-area="Identity"
+               style="background:#0d6efd; padding:20px; border-radius:8px; text-align:center;" class="btn btn-primary btn-lg">
+                ورود به سیستم
+            </a>
+        }
+        else
+        {
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-page="/Keys/Dashboard"
+                   class="btn btn-light btn-lg">
+                    ورود به داشبورد
+                </a>
+            }
+            else if (User.IsInRole("Guard"))
+            {
+                <a asp-page="/Keys/Checkout"
+                   class="btn btn-light btn-lg">
+                    تحویل کلید
+                </a>
+            }
+        }
+    </div>
+</div>
+
+<!-- بخش اطلاعات پایین -->
+<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px;">
+    <div style="background:#f8f9fa; padding:20px; border-radius:8px; text-align:center;">
+        <h4>🔑</h4>
+        <h5>مدیریت کلیدها</h5>
+        <p class="text-muted">ثبت و پیگیری کلیدهای تمام ساختمان‌ها</p>
+    </div>
+    <div style="background:#f8f9fa; padding:20px; border-radius:8px; text-align:center;">
+        <h4>👤</h4>
+        <h5>کنترل دسترسی</h5>
+        <p class="text-muted">رهگیری تمام فعالیت‌های مربوط به کلیدها</p>
+    </div>
+    <div style="background:#f8f9fa; padding:20px; border-radius:8px; text-align:center;">
+        <h4>📊</h4>
+        <h5>گزارش‌گیری</h5>
+        <p class="text-muted">تاریخچه کامل با خروجی Excel</p>
+    </div>
 </div>

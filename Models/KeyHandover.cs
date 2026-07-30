@@ -3,20 +3,29 @@
     public class KeyHandover
     {
         public int Id { get; set; }
-        public DateTime CheckoutTime { get; set; }    // زمان تحویل
-        public DateTime? ReturnTime { get; set; }     // زمان بازگشت (null = هنوز پیشش)
-        public string? Notes { get; set; }            // توضیحات اضافه
+        public DateTime CheckoutTime { get; set; }
+        public DateTime? ReturnTime { get; set; }
+        public string? Notes { get; set; }
+        public string? ReturnNotes { get; set; }
 
-        // کلیدی که تحویل داده شده
+
+        // مدت زمان مجاز (بر حسب ساعت)
+        public double AllowedHours { get; set; } = 8;
+
+        // زمان انقضا
+        public DateTime? ExpiryTime =>
+            CheckoutTime.AddHours(AllowedHours);
+
+        // آیا منقضی شده؟
+        public bool IsExpired =>
+            ReturnTime == null && DateTime.Now > ExpiryTime;
+
         public int KeyId { get; set; }
         public Key Key { get; set; } = null!;
 
-        // کسی که کلید رو گرفته
         public string ReceiverId { get; set; } = string.Empty;
         public string ReceiverName { get; set; } = string.Empty;
-        public string ReceiverDepartment { get; set; } = string.Empty;
-
-        // حراستی که تحویل داده
+        public string? ReceiverDepartment { get; set; }
         public string GuardId { get; set; } = string.Empty;
         public string GuardName { get; set; } = string.Empty;
     }

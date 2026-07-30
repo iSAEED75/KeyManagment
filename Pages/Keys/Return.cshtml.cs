@@ -15,6 +15,7 @@ namespace KeyManagment.Pages.Keys
 
         public List<KeyManagment.Models.KeyHandover> ActiveHandovers { get; set; } = new();
         public string? SuccessMessage { get; set; }
+        public string? ErrorMessage { get; set; }
 
         public async Task OnGetAsync()
         {
@@ -26,8 +27,34 @@ namespace KeyManagment.Pages.Keys
                 .ToListAsync();
         }
 
+        //public async Task<IActionResult> OnPostReturnAsync(int handoverId)
+        //{
+        //    var handover = await _db.KeyHandovers
+        //        .Include(h => h.Key)
+        //        .FirstOrDefaultAsync(h => h.Id == handoverId);
+
+        //    if (handover != null)
+        //    {
+        //        handover.ReturnTime = DateTime.Now;
+        //        handover.Key.IsAvailable = true;
+        //        await _db.SaveChangesAsync();
+        //        SuccessMessage = $"کلید {handover.Key.KeyCode} بازگشت داده شد.";
+        //    }
+
+        //    await OnGetAsync();
+        //    return Page();
+        //}
+        [BindProperty] public string ReturnNotes { get; set; } = string.Empty;
+
         public async Task<IActionResult> OnPostReturnAsync(int handoverId)
         {
+            if (string.IsNullOrWhiteSpace(ReturnNotes))
+            {
+                ErrorMessage = "گزارش بازگشت کلید الزامی است.";
+                await OnGetAsync();
+                return Page();
+            }
+
             var handover = await _db.KeyHandovers
                 .Include(h => h.Key)
                 .FirstOrDefaultAsync(h => h.Id == handoverId);
@@ -35,6 +62,7 @@ namespace KeyManagment.Pages.Keys
             if (handover != null)
             {
                 handover.ReturnTime = DateTime.Now;
+                handover.ReturnNotes = ReturnNotes;
                 handover.Key.IsAvailable = true;
                 await _db.SaveChangesAsync();
                 SuccessMessage = $"کلید {handover.Key.KeyCode} بازگشت داده شد.";

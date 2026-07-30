@@ -1,6 +1,5 @@
 ﻿using KeyManagment.Data;
 using KeyManagment.Models;
-using KeyManagment.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -23,10 +22,12 @@ namespace KeyManagment.Pages.Keys
         }
 
         public List<Key> AvailableKeys { get; set; } = new();
-        public List<IdentityUser> AllUsers { get; set; } = new();
+        public List<UserViewModel> Users { get; set; } = new();
 
         [BindProperty] public int SelectedKeyId { get; set; }
-        [BindProperty] public string SelectedUserId { get; set; } = string.Empty;
+        [BindProperty] public string ReceiverName { get; set; } = string.Empty;
+        [BindProperty] public string? ReceiverDepartment { get; set; }
+        [BindProperty] public double AllowedHours { get; set; } = 8;
         [BindProperty] public string? Notes { get; set; }
 
         public string? SuccessMessage { get; set; }
@@ -41,7 +42,23 @@ namespace KeyManagment.Pages.Keys
                 .ThenBy(k => k.Floor)
                 .ToListAsync();
 
-            AllUsers = _userManager.Users.ToList();
+            // لیست کاربران
+            foreach (var user in _userManager.Users.ToList())
+            {
+                var claims = await _userManager.GetClaimsAsync(user);
+                var fullName = claims
+                    .FirstOrDefault(c => c.Type == "FullName")?.Value
+                    ?? user.Email ?? "";
+                var department = claims
+                    .FirstOrDefault(c => c.Type == "Department")?.Value ?? "";
+                Users.Add(new UserViewModel
+                {
+                    Id = user.Id,
+                    FullName = fullName,
+                    Department = department,
+                    Email = user.Email ?? ""
+                });
+            }
         }
 
         public async Task<IActionResult> OnPostAsync()
@@ -54,32 +71,21 @@ namespace KeyManagment.Pages.Keys
                 return Page();
             }
 
-            var receiver = await _userManager.FindByIdAsync(SelectedUserId);
-            if (receiver == null)
-            {
-                ErrorMessage = "کاربر یافت نشد.";
-                await OnGetAsync();
-                return Page();
-            }
-
             var guard = await _userManager.GetUserAsync(User);
             var guardClaims = await _userManager.GetClaimsAsync(guard!);
-            var receiverClaims = await _userManager.GetClaimsAsync(receiver);
 
             var handover = new KeyHandover
             {
                 KeyId = SelectedKeyId,
-                ReceiverId = SelectedUserId,
-                ReceiverName = receiverClaims
-                    .FirstOrDefault(c => c.Type == "FullName")?.Value
-                    ?? receiver.Email ?? "",
-                ReceiverDepartment = receiverClaims
-                    .FirstOrDefault(c => c.Type == "Department")?.Value ?? "",
+                ReceiverId = "",
+                ReceiverName = ReceiverName,
+                ReceiverDepartment = ReceiverDepartment ?? "",
                 GuardId = guard!.Id,
                 GuardName = guardClaims
                     .FirstOrDefault(c => c.Type == "FullName")?.Value
                     ?? guard.Email ?? "",
                 CheckoutTime = DateTime.Now,
+                AllowedHours = AllowedHours,
                 Notes = Notes
             };
 
@@ -87,9 +93,19 @@ namespace KeyManagment.Pages.Keys
             _db.KeyHandovers.Add(handover);
             await _db.SaveChangesAsync();
 
-            SuccessMessage = $"کلید {key.KeyCode} با موفقیت تحویل داده شد.";
+            SuccessMessage = $"کلید {key.KeyCode} با موفقیت به {ReceiverName} تحویل داده شد.";
             await OnGetAsync();
             return Page();
         }
     }
+
+    public class UserViewModel
+    {
+        public string Id { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string Department { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+
+    }
+
 }

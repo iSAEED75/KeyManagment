@@ -1,75 +1,265 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - KeyManagment</title>
+    <title>@ViewData["Title"] - سامانه کلیدبان نوری</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="icon" type="image/png" href="~/favicon.png" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/KeyManagment.styles.css" asp-append-version="true" />
+    <!-- آیکون‌های Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #f0f2f5;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #0d6efd, #0a58ca) !important;
+            box-shadow: 0 2px 15px rgba(13,110,253,0.3);
+            padding: 0.6rem 1rem;
+        }
+
+        .navbar-brand {
+            color: white !important;
+            font-weight: bold;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+        }
+
+            .navbar-brand i {
+                animation: spin 4s linear infinite;
+            }
+
+        @@keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.85) !important;
+            padding: 8px 14px !important;
+            border-radius: 8px;
+            margin: 2px 2px;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.92rem;
+        }
+
+            .nav-link:hover {
+                color: white !important;
+                background: rgba(255,255,255,0.2);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            }
+
+        /*     .nav-link:hover {
+
+
+            transform:scaleX(1);
+
+            }
+ */
+            .nav-link i {
+                font-size: 0.95rem;
+                transition: transform 0.3s ease;
+            }
+
+            .nav-link:hover i {
+                transform: scale(1.2);
+            }
+
+            .nav-link.active-page {
+                background: rgba(255,255,255,0.25);
+                color: white !important;
+            }
+
+        .welcome-badge {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            backdrop-filter: blur(5px);
+        }
+
+        .navbar-toggler {
+            border-color: rgba(255,255,255,0.5) !important;
+        }
+
+        .navbar-toggler-icon {
+            filter: brightness(10);
+        }
+
+        footer {
+            background: white;
+            margin-top: 40px;
+            padding: 15px 0;
+            font-size: 0.85rem;
+        }
+
+        main {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm border-bottom mb-3">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">KeyManagment</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+
+                <!-- لوگو -->
+                <a class="navbar-brand" asp-area="" asp-page="/Index">
+                    <i class="fa-solid fa-key"></i>
+                    &nbsp;کلیدبان نوری
+                </a>
+
+                <button class="navbar-toggler" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse"
+                        aria-controls="navbarSupportedContent"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
+
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-page="/Keys/Dashboard">داشبورد</a>
+                                <a class="nav-link" asp-page="/Keys/Dashboard">
+                                    <i class="fa-solid fa-gauge-high"></i> داشبورد
+                                </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-page="/Keys/History">تاریخچه</a>
+                                <a class="nav-link" asp-page="/Keys/History">
+                                    <i class="fa-solid fa-clock-rotate-left"></i> تاریخچه
+                                </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-page="/Admin/ManageUsers">کاربران</a>
+                                <a class="nav-link" asp-page="/Admin/ManageUsers">
+                                    <i class="fa-solid fa-users"></i> کاربران
+                                </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-page="/Admin/ManageKeys">مدیریت کلیدها</a>
+                                <a class="nav-link" asp-page="/Admin/ManageKeys">
+                                    <i class="fa-solid fa-screwdriver-wrench"></i> تعریف کلیدها
+                                </a>
                             </li>
                         }
+
                         @if (User.IsInRole("Guard") || User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-page="/Keys/Checkout">تحویل کلید</a>
+                                <a class="nav-link" asp-page="/Keys/Checkout">
+                                    <i class="fa-solid fa-right-from-bracket"></i> تحویل کلید
+                                </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-page="/Keys/Return">بازگشت کلید</a>
+                                <a class="nav-link" asp-page="/Keys/Return">
+                                    <i class="fa-solid fa-right-to-bracket"></i> بازگشت کلید
+                                </a>
                             </li>
                         }
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
-                        </li>
+
                     </ul>
+
+                    <!-- خوش‌آمدگویی -->
+                    @if (User.Identity!.IsAuthenticated)
+                    {
+
+
+                        <div class="welcome-badge me-2">
+                            <i class="fa-solid fa-circle-user fa-lg"> </i>
+                            @{
+                                var fullNameClaim = User.Claims
+                                .FirstOrDefault(c => c.Type == "FullName");
+                                var displayName = !string.IsNullOrEmpty(fullNameClaim?.Value)
+                                ? fullNameClaim!.Value
+                                : User.Identity!.Name?.Split('@')[0];
+                            }
+                            <a class="nav-link" asp-page="/Account/ChangePassword"><span>خوش آمدید، @displayName</span></a>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <span class="badge bg-warning text-dark">مدیر</span>
+                            }
+                            else if (User.IsInRole("Guard"))
+                            {
+                                <span class="badge bg-info text-dark">حراست</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">کارمند</span>
+                            }
+
+                        </div>
+                        @*    <a class="nav-link" asp-page="/Account/ChangePassword">
+                    🔒 تغییر رمز عبور
+                    </a> *@
+                    }
+                    <!--دکمه خروج-->
                     <partial name="_LoginPartial" />
+
+
                 </div>
+
             </div>
         </nav>
+
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+
+    <div class="@(ViewData["FullPage"] != null ? "" : "container")">
+        <main role="main" class="@(ViewData["FullPage"] != null ? "" : "pb-3")">
             @RenderBody()
         </main>
     </div>
 
     <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - KeyManagment - <a asp-area="" asp-page="/Privacy">Privacy</a>
+        <div class="container text-center">
+            <i class="fa-solid fa-shield-halved"></i>
+            سامانه کلیدبان — مجتمع پتروشیمی نوری &copy; 1405
         </div>
     </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- هایلایت لینک فعال -->
+    <script>
+        document.querySelectorAll('.nav-link').forEach(function (link) {
+            if (link.href === window.location.href) {
+                link.classList.add('active-page');
+            }
+        });
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

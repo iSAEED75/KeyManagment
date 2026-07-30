@@ -15,39 +15,279 @@
     <div class="alert alert-danger">@Model.ErrorMessage</div>
 }
 
-<div style="background:#f8f9fa; padding:20px; border-radius:8px;">
+<div style="background:#f8f9fa; padding:25px; border-radius:8px;">
     <form method="post">
-        <div class="mb-3">
-            <label class="form-label">انتخاب کلید</label>
-            <select asp-for="SelectedKeyId" class="form-control" required>
-                <option value="">-- کلید را انتخاب کنید --</option>
-                @foreach (var key in Model.AvailableKeys)
-                {
-                    <option value="@key.Id">
-                        [@key.KeyCode] @key.RoomName —
-                        @key.Building.Name، طبقه @key.Floor
-                    </option>
-                }
-            </select>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+
+            <!-- جستجو و انتخاب کلید -->
+            <div style="grid-column: span 2;">
+                <label class="form-label fw-bold">🔑 انتخاب کلید</label>
+
+                <!-- باکس جستجو -->
+                <input type="text"
+                       id="keySearch"
+                       class="form-control mb-2"
+                       placeholder="جستجو: کد کلید، نام اتاق یا ساختمان..."
+                       autocomplete="off" />
+
+                <!-- لیست کلیدها -->
+                <div id="keyList" style="
+                    max-height: 250px;
+                    overflow-y: auto;
+                    border: 1px solid #dee2e6;
+                    border-radius: 6px;
+                    background: white;">
+
+                    @foreach (var key in Model.AvailableKeys)
+                    {
+                        <div class="key-item"
+                             data-id="@key.Id"
+                             data-text="@key.KeyCode @key.RoomName @key.Building.Name"
+                             style="
+                                padding: 10px 15px;
+                                cursor: pointer;
+                                border-bottom: 1px solid #f0f0f0;
+                                transition: background 0.2s;">
+                            <span class="badge bg-primary">@key.KeyCode</span>
+                            &nbsp; @key.RoomName
+                            <small class="text-muted">
+                                — @key.Building.Name، طبقه @key.Floor
+                            </small>
+                        </div>
+                    }
+                </div>
+
+                <!-- کلید انتخاب‌شده -->
+                <div id="selectedKeyDisplay"
+                     style="display:none;
+                            margin-top:10px;
+                            padding:10px 15px;
+                            background:#d1ecf1;
+                            border-radius:6px;
+                            border: 1px solid #bee5eb;">
+                    ✅ کلید انتخاب‌شده: <strong id="selectedKeyText"></strong>
+                    <button type="button"
+                            onclick="clearKey()"
+                            class="btn btn-sm btn-outline-secondary"
+                            style="margin-right:10px;">
+                        تغییر
+                    </button>
+                </div>
+
+                <input type="hidden" asp-for="SelectedKeyId" id="SelectedKeyId" />
+            </div>
+
+            <div style="grid-column: span 2;">
+                <label class="form-label fw-bold">👤 تحویل‌گیرنده</label>
+
+                <!-- باکس جستجو -->
+                <input type="text"
+                       id="userSearch"
+                       class="form-control mb-2"
+                       placeholder="جستجو: نام، واحد یا ایمیل..."
+                       autocomplete="off" />
+
+                <!-- لیست کاربران -->
+                <div id="userList" style="
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        background: white;">
+
+                    @foreach (var user in Model.Users)
+                    {
+                        <div class="user-item"
+                             data-id="@user.Id"
+                             data-name="@user.FullName"
+                             data-department="@user.Department"
+                             data-text="@user.FullName @user.Department @user.Email"
+                             style="
+                    padding: 10px 15px;
+                    cursor: pointer;
+                    border-bottom: 1px solid #f0f0f0;
+                    transition: background 0.2s;">
+                            <strong>@user.FullName</strong>
+                            @if (!string.IsNullOrEmpty(user.Department))
+                            {
+                                <small class="text-muted"> — @user.Department</small>
+                            }
+                            <br />
+                            <small class="text-muted">@user.Email</small>
+                        </div>
+                    }
+                </div>
+
+                <!-- کاربر انتخاب‌شده -->
+                <div id="selectedUserDisplay"
+                     style="display:none;
+                margin-top:10px;
+                padding:10px 15px;
+                background:#d4edda;
+                border-radius:6px;
+                border: 1px solid #c3e6cb;">
+                    ✅ تحویل‌گیرنده: <strong id="selectedUserText"></strong>
+                    <button type="button"
+                            onclick="clearUser()"
+                            class="btn btn-sm btn-outline-secondary"
+                            style="margin-right:10px;">
+                        تغییر
+                    </button>
+                </div>
+
+                <input type="hidden" asp-for="ReceiverName" id="ReceiverName" />
+                <input type="hidden" asp-for="ReceiverDepartment" id="ReceiverDepartment" />
+            </div>
+@* 
+            <div>
+                <label class="form-label fw-bold">⏱ مدت زمان تحویل (ساعت)</label>
+                <select asp-for="AllowedHours" class="form-control" required>
+                    <option value="1">۱ ساعت</option>
+                    <option value="2">۲ ساعت</option>
+                    <option value="3">۳ ساعت</option>
+                    <option value="4">۴ ساعت</option>
+                    <option value="6">۶ ساعت</option>
+                    <option value="8" selected>۸ ساعت</option>
+                    <option value="24">۲۴ ساعت</option>
+                    <option value="48">۴۸ ساعت</option>
+                </select>
+            </div> *@
+            <div>
+                <label class="form-label fw-bold">⏱ تحویل تا ساعت</label>
+                <input type="time"
+                       id="returnTime"
+                       class="form-control"
+                       required
+                       onchange="calcHours()" />
+                <small class="text-muted" id="hoursDiff"></small>
+                <input type="hidden" asp-for="AllowedHours" id="AllowedHours" />
+            </div>
+            <div>
+                <label class="form-label fw-bold">توضیحات (اختیاری)</label>
+                <input asp-for="Notes" class="form-control"
+                       placeholder="مثلاً: برای جلسه فوری" />
+            </div>
+
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">تحویل به</label>
-            <select asp-for="SelectedUserId" class="form-control" required>
-                <option value="">-- کارمند را انتخاب کنید --</option>
-                @foreach (var user in Model.AllUsers)
-                {
-                    <option value="@user.Id">@user.Email</option>
-                }
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">توضیحات (اختیاری)</label>
-            <input asp-for="Notes" class="form-control"
-                   placeholder="مثلاً: برای جلسه فوری" />
-        </div>
-
-        <button type="submit" class="btn btn-primary">ثبت تحویل کلید</button>
+        <button type="submit" class="btn btn-primary btn-lg mt-3">
+            ثبت تحویل کلید
+        </button>
     </form>
 </div>
+
+<script>
+    // جستجو در لیست کلیدها
+    document.getElementById('keySearch').addEventListener('input', function () {
+        var search = this.value.toLowerCase();
+        document.querySelectorAll('.key-item').forEach(function (item) {
+            var text = item.dataset.text.toLowerCase();
+            item.style.display = text.includes(search) ? 'block' : 'none';
+        });
+    });
+
+    // انتخاب کلید با کلیک
+    document.querySelectorAll('.key-item').forEach(function (item) {
+        item.addEventListener('click', function () {
+            var id = this.dataset.id;
+            var text = this.innerText.trim();
+
+            document.getElementById('SelectedKeyId').value = id;
+            document.getElementById('selectedKeyText').textContent = text;
+            document.getElementById('selectedKeyDisplay').style.display = 'block';
+            document.getElementById('keyList').style.display = 'none';
+            document.getElementById('keySearch').style.display = 'none';
+        });
+
+        // hover effect
+        item.addEventListener('mouseover', function () {
+            this.style.background = '#e8f4f8';
+        });
+        item.addEventListener('mouseout', function () {
+            this.style.background = 'white';
+        });
+    });
+
+    // پاک کردن انتخاب
+    function clearKey() {
+        document.getElementById('SelectedKeyId').value = '';
+        document.getElementById('selectedKeyDisplay').style.display = 'none';
+        document.getElementById('keyList').style.display = 'block';
+        document.getElementById('keySearch').style.display = 'block';
+        document.getElementById('keySearch').value = '';
+        document.querySelectorAll('.key-item').forEach(function (item) {
+            item.style.display = 'block';
+        });
+    }
+    function calcHours() {
+        var timeInput = document.getElementById('returnTime').value;
+        if (!timeInput) return;
+
+        var now = new Date();
+        var parts = timeInput.split(':');
+        var target = new Date();
+        target.setHours(parseInt(parts[0]), parseInt(parts[1]), 0, 0);
+
+        // اگه ساعت انتخابی گذشته، فردا حساب کن
+        if (target <= now) {
+            target.setDate(target.getDate() + 1);
+        }
+
+        var diffMs = target - now;
+        var diffHours = diffMs / 3600000;
+
+        document.getElementById('AllowedHours').value = diffHours.toFixed(2);
+
+        var hours = Math.floor(diffHours);
+        var minutes = Math.round((diffHours - hours) * 60);
+        document.getElementById('hoursDiff').textContent =
+            '( '  + minutes + ' ساعت'+ hours+' دقیقه دیگر )';
+        // + hours + ' ساعت و '
+    }
+</script>
+<script>
+    // جستجو در لیست کاربران
+    document.getElementById('userSearch').addEventListener('input', function () {
+        var search = this.value.toLowerCase();
+        document.querySelectorAll('.user-item').forEach(function (item) {
+            var text = item.dataset.text.toLowerCase();
+            item.style.display = text.includes(search) ? 'block' : 'none';
+        });
+    });
+
+    // انتخاب کاربر با کلیک
+    document.querySelectorAll('.user-item').forEach(function (item) {
+        item.addEventListener('click', function () {
+            var name = this.dataset.name;
+            var department = this.dataset.department;
+            var displayText = name + (department ? ' — ' + department : '');
+
+            document.getElementById('ReceiverName').value = name;
+            document.getElementById('ReceiverDepartment').value = department;
+            document.getElementById('selectedUserText').textContent = displayText;
+            document.getElementById('selectedUserDisplay').style.display = 'block';
+            document.getElementById('userList').style.display = 'none';
+            document.getElementById('userSearch').style.display = 'none';
+        });
+
+        item.addEventListener('mouseover', function () {
+            this.style.background = '#e8f4f8';
+        });
+        item.addEventListener('mouseout', function () {
+            this.style.background = 'white';
+        });
+    });
+
+    // پاک کردن انتخاب
+    function clearUser() {
+        document.getElementById('ReceiverName').value = '';
+        document.getElementById('ReceiverDepartment').value = '';
+        document.getElementById('selectedUserDisplay').style.display = 'none';
+        document.getElementById('userList').style.display = 'block';
+        document.getElementById('userSearch').style.display = 'block';
+        document.getElementById('userSearch').value = '';
+        document.querySelectorAll('.user-item').forEach(function (item) {
+            item.style.display = 'block';
+        });
+    }
+</script>

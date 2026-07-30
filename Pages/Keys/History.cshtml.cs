@@ -1,10 +1,12 @@
 ﻿using ClosedXML.Excel;
 using KeyManagment.Data;
+using KeyManagment.Helpers;
 using KeyManagment.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using KeyManagment.Helpers;
 
 namespace KeyManagment.Pages.Keys
 {
@@ -37,10 +39,10 @@ namespace KeyManagment.Pages.Keys
             // هدر
             var headers = new[]
             {
-                "کد کلید", "اتاق", "ساختمان", "طبقه",
-                "تحویل‌گیرنده", "واحد", "حراست",
-                "زمان تحویل", "زمان بازگشت", "وضعیت", "توضیحات"
-            };
+    "کد کلید", "اتاق", "ساختمان", "طبقه",
+    "تحویل‌گیرنده", "واحد", "حراست",
+    "زمان تحویل", "زمان بازگشت", "وضعیت", "توضیحات", "گزارش بازگشت"
+};
 
             for (int i = 0; i < headers.Length; i++)
             {
@@ -63,10 +65,12 @@ namespace KeyManagment.Pages.Keys
                 ws.Cell(row, 5).Value = h.ReceiverName;
                 ws.Cell(row, 6).Value = h.ReceiverDepartment;
                 ws.Cell(row, 7).Value = h.GuardName;
-                ws.Cell(row, 8).Value = h.CheckoutTime.ToString("yyyy/MM/dd HH:mm");
-                ws.Cell(row, 9).Value = h.ReturnTime?.ToString("yyyy/MM/dd HH:mm") ?? "—";
+                ws.Cell(row, 8).Value = h.CheckoutTime.ToShamsiWithTime();
+                ws.Cell(row, 9).Value = h.ReturnTime.ToShamsiWithTime() ?? "—";
                 ws.Cell(row, 10).Value = h.ReturnTime == null ? "خارج" : "بازگشت";
                 ws.Cell(row, 11).Value = h.Notes ?? "";
+                ws.Cell(row, 12).Value = h.ReturnNotes ?? "";
+
             }
 
             ws.Columns().AdjustToContents();

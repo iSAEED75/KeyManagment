@@ -1,5 +1,4 @@
 using KeyManagment.Data;
-using KeyManagment.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +14,10 @@ namespace KeyManagment.Pages.Keys
         public int TotalKeys { get; set; }
         public int AvailableKeys { get; set; }
         public int CheckedOutKeys { get; set; }
+        public int ExpiredKeys { get; set; }
+
         public List<KeyManagment.Models.KeyHandover> ActiveHandovers { get; set; } = new();
+        public List<KeyManagment.Models.KeyHandover> ExpiredHandovers { get; set; } = new();
         public List<KeyManagment.Models.KeyHandover> RecentHistory { get; set; } = new();
 
         public async Task OnGetAsync()
@@ -24,11 +26,15 @@ namespace KeyManagment.Pages.Keys
             AvailableKeys = await _db.Keys.CountAsync(k => k.IsAvailable);
             CheckedOutKeys = TotalKeys - AvailableKeys;
 
-            ActiveHandovers = await _db.KeyHandovers
+            var allActive = await _db.KeyHandovers
                 .Include(h => h.Key).ThenInclude(k => k.Building)
                 .Where(h => h.ReturnTime == null)
                 .OrderBy(h => h.CheckoutTime)
                 .ToListAsync();
+
+            ExpiredHandovers = allActive.Where(h => h.IsExpired).ToList();
+            ActiveHandovers = allActive.Where(h => !h.IsExpired).ToList();
+            ExpiredKeys = ExpiredHandovers.Count;
 
             RecentHistory = await _db.KeyHandovers
                 .Include(h => h.Key).ThenInclude(k => k.Building)

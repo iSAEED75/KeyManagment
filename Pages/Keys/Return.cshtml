@@ -10,48 +10,115 @@
 {
     <div class="alert alert-success">@Model.SuccessMessage</div>
 }
-
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
 @if (!Model.ActiveHandovers.Any())
 {
     <div class="alert alert-info">همه کلیدها موجود هستند.</div>
 }
 else
 {
-    <table class="table table-striped">
-        <thead>
+    <table class="table table-bordered">
+        <thead class="table-dark">
             <tr>
                 <th>کد کلید</th>
                 <th>اتاق</th>
-                <th>ساختمان</th>
                 <th>تحویل‌گیرنده</th>
                 <th>واحد</th>
                 <th>زمان تحویل</th>
+                <th>مهلت</th>
+                <th>زمان باقیمانده</th>
                 <th>عملیات</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var h in Model.ActiveHandovers)
             {
-                <tr>
+                var isExpired = h.IsExpired;
+                var rowClass = isExpired ? "table-danger" : "";
+                <tr class="@rowClass">
                     <td><strong>@h.Key.KeyCode</strong></td>
-                    <td>@h.Key.RoomName</td>
-                    <td>@h.Key.Building.Name، طبقه @h.Key.Floor</td>
+                    <td>@h.Key.RoomName — @h.Key.Building.Name</td>
                     <td>@h.ReceiverName</td>
                     <td>@h.ReceiverDepartment</td>
-                    <td>@h.CheckoutTime.ToString("yyyy/MM/dd HH:mm")</td>
+                   @*  <td>@h.CheckoutTime.ToString("HH:mm — yyyy/MM/dd")</td>
                     <td>
-                        <form method="post">
-                            <input type="hidden" name="handoverId" value="@h.Id" />
-                            <button type="submit"
-                                    asp-page-handler="Return"
-                                    class="btn btn-sm btn-warning"
-                                    onclick="return confirm('بازگشت کلید تأیید می‌شود؟')">
-                                بازگشت کلید
-                            </button>
-                        </form>
+                        @h.ExpiryTime?.ToString("HH:mm — yyyy/MM/dd")
+                        <br />
+                        <small class="text-muted">(@h.AllowedHours ساعت)</small>
+                    </td> *@
+                    <td>@h.CheckoutTime.ToShamsiWithTime()</td>
+                    <td>@h.ExpiryTime.ToShamsiWithTime()</td>
+                    <td>
+                        @if (isExpired)
+                        {
+                            <span class="badge bg-danger">⚠ منقضی شده</span>
+                        }
+                        else
+                        {
+                            <span class="timer badge bg-warning text-dark"
+                                  data-expiry="@(((DateTimeOffset)h.ExpiryTime!.Value).ToUnixTimeMilliseconds())">
+                                در حال محاسبه...
+                            </span>
+                        }
                     </td>
+<td>
+    <form method="post">
+        <input type="hidden" name="handoverId" value="@h.Id" />
+        <div style="display:flex; gap:8px; align-items:flex-start;">
+            <textarea name="ReturnNotes"
+                      class="form-control form-control-sm"
+                      rows="2"
+                      style="min-width:200px;"
+                      placeholder="گزارش بازگشت کلید را بنویسید..."
+                      required></textarea>
+            <button type="submit"
+                    asp-page-handler="Return"
+                    class="btn btn-sm btn-warning"
+                    onclick="return confirm('بازگشت کلید تأیید می‌شود؟')">
+                ثبت بازگشت
+            </button>
+        </div>
+    </form>
+</td>
                 </tr>
             }
         </tbody>
     </table>
 }
+
+<!-- تایمر -->
+<script>
+    function updateTimers() {
+        document.querySelectorAll('.timer').forEach(function (el) {
+            var expiryMs = parseInt(el.dataset.expiry);
+            var now = Date.now();
+            var diff = expiryMs - now;
+
+            if (diff <= 0) {
+                el.className = 'badge bg-danger';
+                el.textContent = '⚠ منقضی شده';
+                return;
+            }
+
+            var hours = Math.floor(diff / 3600000);
+            var minutes = Math.floor((diff % 3600000) / 60000);
+            var seconds = Math.floor((diff % 60000) / 1000);
+
+            el.textContent = hours + ':' +
+                String(minutes).padStart(2, '0') + ':' +
+                String(seconds).padStart(2, '0') + ' مانده';
+
+            if (diff < 1800000) {
+                el.className = 'timer badge bg-danger';
+            } else {
+                el.className = 'timer badge bg-warning text-dark';
+            }
+        });
+    }
+
+    updateTimers();
+    setInterval(updateTimers, 1000);
+</script>

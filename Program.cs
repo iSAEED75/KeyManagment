@@ -1,4 +1,4 @@
-﻿using KeyManagment.Data;
+using KeyManagment.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,11 +20,29 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 //builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
 //.AddEntityFrameworkStores<ApplicationDbContext>();
 //جایگزین شده
+//builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+//    options.SignIn.RequireConfirmedAccount = false)
+//    .AddRoles<IdentityRole>()
+//    .AddEntityFrameworkStores<ApplicationDbContext>();
+//builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+//{
+//    options.SignIn.RequireConfirmedAccount = false;
+//    options.User.AllowedUserNameCharacters = "0123456789";
+//})
+//.AddRoles<IdentityRole>()
+//.AddEntityFrameworkStores<ApplicationDbContext>();
+// جدید
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
-    options.SignIn.RequireConfirmedAccount = false)
-    .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+{
+    options.SignIn.RequireConfirmedAccount = false;
+    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+    options.User.RequireUniqueEmail = false;
+})
+.AddRoles<IdentityRole>()
+.AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddRazorPages();
+
+
 
 var app = builder.Build();
 
@@ -48,6 +66,14 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapRazorPages();
+
+// اجرای Migration و ساخت خودکار دیتابیس
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+}
+
 // ساخت نقش‌ها و ادمین اولیه
 using (var scope = app.Services.CreateScope())
 {
@@ -56,25 +82,26 @@ using (var scope = app.Services.CreateScope())
     var userManager = scope.ServiceProvider
         .GetRequiredService<UserManager<IdentityUser>>();
 
-    // ساخت نقش‌ها
     foreach (var role in new[] { "Admin", "Guard", "User" })
     {
         if (!await roleManager.RoleExistsAsync(role))
             await roleManager.CreateAsync(new IdentityRole(role));
     }
 
-    // ساخت ادمین اولیه (فقط اگه وجود نداشته باشه)
-    var adminEmail = "admin@KeyManagment.ir";
-    if (await userManager.FindByEmailAsync(adminEmail) == null)
+    var adminCode = "admin";
+    if (await userManager.FindByNameAsync(adminCode) == null)
     {
         var admin = new IdentityUser
         {
-            UserName = adminEmail,
-            Email = adminEmail,
+            UserName = adminCode,
+            Email = "admin@nouri.ir",
             EmailConfirmed = true
         };
         await userManager.CreateAsync(admin, "Admin@123456");
         await userManager.AddToRoleAsync(admin, "Admin");
+        await userManager.AddClaimAsync(admin,
+            new System.Security.Claims.Claim("FullName", "مدیر سیستم"));
     }
 }
+
 app.Run();

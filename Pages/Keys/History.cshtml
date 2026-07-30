@@ -61,6 +61,8 @@
                 <th>زمان تحویل</th>
                 <th>زمان بازگشت</th>
                 <th>وضعیت</th>
+                <th>گزارش بازگشت</th>
+
             </tr>
         </thead>
         <tbody>
@@ -73,8 +75,8 @@
                     <td>@h.ReceiverName</td>
                     <td>@h.ReceiverDepartment</td>
                     <td>@h.GuardName</td>
-                    <td>@h.CheckoutTime.ToString("yyyy/MM/dd HH:mm")</td>
-                    <td>@(h.ReturnTime?.ToString("yyyy/MM/dd HH:mm") ?? "—")</td>
+                    <td>@h.CheckoutTime.ToShamsiWithTime()</td>
+                    <td>@(h.ReturnTime.ToShamsiWithTime() ?? "—")</td>
                     <td>
                         @if (h.ReturnTime == null)
                         {
@@ -85,6 +87,7 @@
                             <span class="badge bg-success">بازگشت</span>
                         }
                     </td>
+                    <td>@(h.ReturnNotes ?? "—")</td>
                 </tr>
             }
         </tbody>
