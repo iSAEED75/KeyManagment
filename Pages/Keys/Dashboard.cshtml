@@ -4,13 +4,222 @@
     ViewData["Title"] = "داشبورد مدیر";
 }
 
-<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+<style>
+    /* ---------- ردیف عنوان ---------- */
+    .dash-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    /* ---------- کارت‌های آماری: همیشه یک ردیف افقی ---------- */
+    .stats-row {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 14px;
+        margin-bottom: 26px;
+        overflow-x: auto;
+    }
+
+    .stat-card {
+        flex: 1 1 0;
+        min-width: 150px;
+        position: relative;
+        overflow: hidden;
+        border-radius: 14px;
+        padding: 20px 18px;
+        color: #fff;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+        opacity: 0;
+        transform: translateY(14px);
+        animation: statIn 0.45s ease forwards;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: .05s; background: linear-gradient(135deg,#0d6efd,#0a58ca); }
+    .stat-card:nth-child(2) { animation-delay: .12s; background: linear-gradient(135deg,#20c997,#198754); }
+    .stat-card:nth-child(3) { animation-delay: .19s; background: linear-gradient(135deg,#fd9843,#fd7e14); }
+    .stat-card:nth-child(4) { animation-delay: .26s; background: linear-gradient(135deg,#ff6b6b,#dc3545); }
+
+    @@keyframes statIn {
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+    }
+
+    .stat-card .stat-icon {
+        position: absolute;
+        left: 14px;
+        top: 14px;
+        font-size: 1.6rem;
+        opacity: .35;
+    }
+
+    .stat-card .stat-value {
+        font-size: 1.9rem;
+        font-weight: 800;
+        margin: 0;
+    }
+
+    .stat-card .stat-label {
+        margin: 4px 0 0;
+        opacity: .92;
+        font-size: .88rem;
+        white-space: nowrap;
+    }
+
+    .stat-card.expired-card .stat-value {
+        animation: pulseNum 1.6s ease-in-out infinite;
+    }
+
+    @@keyframes pulseNum {
+        0%, 100% { text-shadow: 0 0 0 rgba(255,255,255,0); }
+        50% { text-shadow: 0 0 14px rgba(255,255,255,.85); }
+    }
+
+    @@media (max-width: 700px) {
+        .stats-row { flex-wrap: wrap; }
+        .stat-card { min-width: 45%; }
+    }
+
+    /* ---------- چارت‌ها ---------- */
+    .charts-row {
+        display: flex;
+        gap: 18px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+
+    .chart-card {
+        background: #fff;
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+        flex: 1 1 320px;
+    }
+
+    .chart-card.chart-wide {
+        flex-basis: 100%;
+    }
+
+    .chart-card h6 {
+        margin: 0 0 12px;
+        font-weight: 700;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .chart-box {
+        position: relative;
+        height: 230px;
+        width: 100%;
+    }
+
+    /* ---------- نوار فیلتر ---------- */
+    .filter-bar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    /* ---------- نوار پیشرفت زمان باقیمانده ---------- */
+    .timer-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        min-width: 130px;
+    }
+
+    .timer-progress {
+        display: block;
+        height: 6px;
+        background: #eee;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .timer-progress-fill {
+        display: block;
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg,#20c997,#198754);
+        transition: width .6s ease, background .6s ease;
+    }
+
+    /* ---------- درخشش کلیدهای منقضی ---------- */
+    .expired-glow {
+        animation: glow 1.4s ease-in-out infinite;
+    }
+
+    @@keyframes glow {
+        0%, 100% { box-shadow: 0 0 0 rgba(220,53,69,0); }
+        50% { box-shadow: 0 0 14px rgba(220,53,69,.55); }
+    }
+
+    /* ---------- عنوان بخش‌ها ---------- */
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        margin: 24px 0 12px;
+        font-size: 1.05rem;
+    }
+
+    /* ---------- فهرست آخرین فعالیت ---------- */
+    .activity-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .activity-list li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: #f8f9fa;
+        margin-bottom: 8px;
+        transition: background .2s ease;
+    }
+
+    .activity-list li:hover {
+        background: #eef2f5;
+    }
+
+    .activity-list .activity-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #198754;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: .9rem;
+    }
+</style>
+
+<div class="dash-header">
     <h2 class="mb-0"><i class="fa-solid fa-gauge-high text-primary"></i> داشبورد مدیریت کلید</h2>
     <span class="text-muted small"><i class="fa-regular fa-clock"></i> آخرین بروزرسانی: @DateTime.Now.ToShamsiWithTime()</span>
 </div>
 
-<!-- آمار کلی -->
-<div class="stats-grid">
+<!-- آمار کلی: یک ردیف افقی -->
+<div class="stats-row">
     <div class="stat-card">
         <i class="fa-solid fa-key stat-icon"></i>
         <p class="stat-value" data-count="@Model.TotalKeys">0</p>
@@ -34,22 +243,18 @@
 </div>
 
 <!-- چارت‌ها -->
-<div class="charts-grid">
+<div class="charts-row">
     <div class="chart-card">
         <h6><i class="fa-solid fa-chart-pie text-primary"></i> وضعیت کلی کلیدها</h6>
-        <canvas id="statusChart"></canvas>
+        <div class="chart-box"><canvas id="statusChart"></canvas></div>
     </div>
     <div class="chart-card">
         <h6><i class="fa-solid fa-building text-warning"></i> کلیدهای خارج‌شده به تفکیک ساختمان</h6>
-        <canvas id="buildingChart"></canvas>
+        <div class="chart-box"><canvas id="buildingChart"></canvas></div>
     </div>
-    <div class="chart-card">
-        <h6><i class="fa-solid fa-sitemap text-info"></i> کلیدهای خارج‌شده به تفکیک واحد</h6>
-        <canvas id="deptChart"></canvas>
-    </div>
-    <div class="chart-card">
+    <div class="chart-card chart-wide">
         <h6><i class="fa-solid fa-chart-line text-success"></i> روند تحویل کلید (۷ روز اخیر)</h6>
-        <canvas id="trendChart"></canvas>
+        <div class="chart-box"><canvas id="trendChart"></canvas></div>
     </div>
 </div>
 
@@ -61,7 +266,7 @@
             <h5 style="margin:0;"><i class="fa-solid fa-triangle-exclamation"></i> کلیدهای منقضی شده (@Model.ExpiredHandovers.Count عدد)</h5>
             <small>این کلیدها از مهلت مقرر گذشته‌اند و باید بازگردانده شوند</small>
         </div>
-        <table class="table table-bordered mb-0 dash-table">
+        <table class="table table-bordered mb-0">
             <thead class="table-danger">
                 <tr>
                     <th>کد کلید</th>
@@ -75,12 +280,10 @@
                 </tr>
             </thead>
             <tbody>
-                @{ int ei = 0; }
                 @foreach (var h in Model.ExpiredHandovers)
                 {
-                    ei++;
                     var delay = DateTime.Now - h.ExpiryTime!.Value;
-                    <tr class="table-danger" style="animation-delay:@(ei * 40)ms">
+                    <tr class="table-danger">
                         <td><strong>@h.Key.KeyCode</strong></td>
                         <td>@h.Key.RoomName — @h.Key.Building.Name</td>
                         <td>@h.ReceiverName</td>
@@ -123,7 +326,7 @@ else
         </select>
     </div>
 
-    <table id="activeTable" class="table table-bordered mb-4 dash-table">
+    <table id="activeTable" class="table table-bordered mb-4">
         <thead class="table-warning">
             <tr>
                 <th>کد کلید</th>
@@ -137,12 +340,9 @@ else
             </tr>
         </thead>
         <tbody>
-            @{ int ai = 0; }
             @foreach (var h in Model.ActiveHandovers)
             {
-                ai++;
-                <tr style="animation-delay:@(ai * 30)ms"
-                    data-keycode="@h.Key.KeyCode.ToLower()"
+                <tr data-keycode="@h.Key.KeyCode.ToLower()"
                     data-receiver="@h.ReceiverName.ToLower()"
                     data-building="@h.Key.Building.Name">
                     <td><strong>@h.Key.KeyCode</strong></td>
@@ -171,11 +371,9 @@ else
 {
     <div class="section-title"><i class="fa-solid fa-clock-rotate-left text-secondary"></i> آخرین کلیدهای بازگردانده‌شده</div>
     <ul class="activity-list">
-        @{ int ri = 0; }
         @foreach (var h in Model.RecentHistory)
         {
-            ri++;
-            <li style="animation-delay:@(ri * 50)ms">
+            <li>
                 <span class="activity-icon"><i class="fa-solid fa-rotate-left"></i></span>
                 <div>
                     <strong>@h.Key.KeyCode</strong> — @h.Key.RoomName (@h.Key.Building.Name)
@@ -211,10 +409,11 @@ else
         // ---------- چارت‌ها ----------
         var statusData = @Html.Raw(Model.StatusChartJson);
         var buildingData = @Html.Raw(Model.BuildingChartJson);
-        var deptData = @Html.Raw(Model.DeptChartJson);
         var trendData = @Html.Raw(Model.TrendChartJson);
 
         Chart.defaults.font.family = "'Segoe UI', Tahoma, sans-serif";
+        Chart.defaults.maintainAspectRatio = false;
+        Chart.defaults.responsive = true;
 
         new Chart(document.getElementById('statusChart'), {
             type: 'doughnut',
@@ -227,6 +426,7 @@ else
                 }]
             },
             options: {
+                maintainAspectRatio: false,
                 plugins: { legend: { position: 'bottom' } },
                 animation: { animateScale: true, animateRotate: true }
             }
@@ -244,26 +444,9 @@ else
                 }]
             },
             options: {
+                maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-            }
-        });
-
-        new Chart(document.getElementById('deptChart'), {
-            type: 'bar',
-            data: {
-                labels: deptData.labels,
-                datasets: [{
-                    label: 'تعداد',
-                    data: deptData.values,
-                    backgroundColor: '#6f42c1',
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                plugins: { legend: { display: false } },
-                scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
             }
         });
 
@@ -282,6 +465,7 @@ else
                 }]
             },
             options: {
+                maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
             }

@@ -27,7 +27,6 @@ namespace KeyManagment.Pages.Keys
         // داده‌های چارت‌ها (به‌صورت JSON برای مصرف مستقیم در Chart.js)
         public string StatusChartJson { get; set; } = "{}";
         public string BuildingChartJson { get; set; } = "{}";
-        public string DeptChartJson { get; set; } = "{}";
         public string TrendChartJson { get; set; } = "{}";
 
         public async Task OnGetAsync()
@@ -82,20 +81,6 @@ namespace KeyManagment.Pages.Keys
             {
                 labels = byBuilding.Select(g => g.Label),
                 values = byBuilding.Select(g => g.Count)
-            }, jsonOptions);
-
-            // ---- چارت کلیدهای خارج‌شده به تفکیک واحد سازمانی ----
-            var byDept = allActive
-                .GroupBy(h => string.IsNullOrWhiteSpace(h.ReceiverDepartment) ? "نامشخص" : h.ReceiverDepartment)
-                .Select(g => new { Label = g.Key, Count = g.Count() })
-                .OrderByDescending(g => g.Count)
-                .Take(8)
-                .ToList();
-
-            DeptChartJson = JsonSerializer.Serialize(new
-            {
-                labels = byDept.Select(g => g.Label),
-                values = byDept.Select(g => g.Count)
             }, jsonOptions);
 
             // ---- روند تحویل کلید در ۷ روز اخیر ----
