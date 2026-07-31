@@ -5,6 +5,24 @@
 }
 
 <style>
+    /* ---------- اضافه کردن CSS برای استایل لینک---------- */
+
+    .stat-card-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        flex: 1 1 0;
+        min-width: 150px;
+    }
+
+        .stat-card-link .stat-card {
+            min-width: unset;
+            width: 100%;
+        }
+
+    html {
+        scroll-behavior: smooth;
+    }
     /* ---------- ردیف عنوان ---------- */
     .dash-header {
         display: flex;
@@ -40,10 +58,25 @@
         transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
 
-    .stat-card:nth-child(1) { animation-delay: .05s; background: linear-gradient(135deg,#0d6efd,#0a58ca); }
-    .stat-card:nth-child(2) { animation-delay: .12s; background: linear-gradient(135deg,#20c997,#198754); }
-    .stat-card:nth-child(3) { animation-delay: .19s; background: linear-gradient(135deg,#fd9843,#fd7e14); }
-    .stat-card:nth-child(4) { animation-delay: .26s; background: linear-gradient(135deg,#ff6b6b,#dc3545); }
+        .stat-card.total-card {
+            animation-delay: .05s;
+            background: linear-gradient(135deg,#0d6efd,#0a58ca);
+        }
+
+        .stat-card.available-card {
+            animation-delay: .12s;
+            background: linear-gradient(135deg,#20c997,#198754);
+        }
+
+        .stat-card.checkedout-card {
+            animation-delay: .19s;
+            background: linear-gradient(135deg,#fd9843,#fd7e14);
+        }
+
+        .stat-card.expired-card {
+            animation-delay: .26s;
+            background: linear-gradient(135deg,#ff6b6b,#dc3545);
+        }
 
     @@keyframes statIn {
         to { opacity: 1; transform: translateY(0); }
@@ -220,26 +253,30 @@
 
 <!-- آمار کلی: یک ردیف افقی -->
 <div class="stats-row">
-    <div class="stat-card">
+    <div class="stat-card total-card">
         <i class="fa-solid fa-key stat-icon"></i>
         <p class="stat-value" data-count="@Model.TotalKeys">0</p>
         <p class="stat-label">کل کلیدها</p>
     </div>
-    <div class="stat-card">
+    <div class="stat-card available-card">
         <i class="fa-solid fa-circle-check stat-icon"></i>
         <p class="stat-value" data-count="@Model.AvailableKeys">0</p>
         <p class="stat-label">موجود</p>
     </div>
-    <div class="stat-card">
-        <i class="fa-solid fa-right-from-bracket stat-icon"></i>
-        <p class="stat-value" data-count="@Model.CheckedOutKeys">0</p>
-        <p class="stat-label">خارج‌شده</p>
-    </div>
-    <div class="stat-card expired-card">
-        <i class="fa-solid fa-triangle-exclamation stat-icon"></i>
-        <p class="stat-value" data-count="@Model.ExpiredKeys">0</p>
-        <p class="stat-label">⚠ منقضی شده</p>
-    </div>
+    <a href="#activeSection" class="stat-card-link">
+        <div class="stat-card checkedout-card">
+            <i class="fa-solid fa-right-from-bracket stat-icon"></i>
+            <p class="stat-value" data-count="@Model.CheckedOutKeys">0</p>
+            <p class="stat-label">خارج‌شده</p>
+        </div>
+    </a>
+    <a href="#expiredSection" class="stat-card-link">
+        <div class="stat-card expired-card">
+            <i class="fa-solid fa-triangle-exclamation stat-icon"></i>
+            <p class="stat-value" data-count="@Model.ExpiredKeys">0</p>
+            <p class="stat-label">⚠ منقضی شده</p>
+        </div>
+    </a>
 </div>
 
 <!-- چارت‌ها -->
@@ -259,6 +296,7 @@
 </div>
 
 <!-- کلیدهای منقضی شده -->
+<div id="expiredSection"></div>
 @if (Model.ExpiredHandovers.Any())
 {
     <div class="expired-glow" style="border: 2px solid #dc3545; border-radius:12px; margin-bottom:30px; overflow:hidden;">
@@ -304,8 +342,7 @@
 }
 
 <!-- کلیدهای فعال (منقضی نشده) -->
-<div class="section-title"><i class="fa-solid fa-list-check text-warning"></i> کلیدهای فعلاً خارج‌شده (@Model.ActiveHandovers.Count عدد)</div>
-
+<div class="section-title" id="activeSection"><i class="fa-solid fa-list-check text-warning"></i> کلیدهای فعلاً خارج‌شده (@Model.ActiveHandovers.Count عدد)</div>
 @if (!Model.ActiveHandovers.Any())
 {
     <div class="alert alert-info">هیچ کلید فعالی خارج نشده.</div>
@@ -369,7 +406,12 @@ else
 <!-- آخرین فعالیت -->
 @if (Model.RecentHistory.Any())
 {
-    <div class="section-title"><i class="fa-solid fa-clock-rotate-left text-secondary"></i> آخرین کلیدهای بازگردانده‌شده</div>
+    <div class="section-title" style="justify-content: space-between;">
+        <span><i class="fa-solid fa-clock-rotate-left text-secondary"></i> آخرین کلیدهای بازگردانده‌شده</span>
+        <a asp-page="/Keys/History" class="btn btn-sm btn-outline-secondary">
+            مشاهده همه <i class="fa-solid fa-arrow-left"></i>
+        </a>
+    </div>
     <ul class="activity-list">
         @foreach (var h in Model.RecentHistory)
         {

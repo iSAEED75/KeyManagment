@@ -49,7 +49,7 @@ namespace KeyManagment.Pages.Keys
                 .Include(h => h.Key).ThenInclude(k => k.Building)
                 .Where(h => h.ReturnTime != null)
                 .OrderByDescending(h => h.ReturnTime)
-                .Take(8)
+                .Take(5)
                 .ToListAsync();
 
             BuildingNames = await _db.Keys

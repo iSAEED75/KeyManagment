@@ -255,7 +255,7 @@
             سامانه کلیدبان — مجتمع پتروشیمی نوری &copy; 1405
         </div>
     </footer>
-
+    <div class="toast-container position-fixed top-0 end-0 p-3" id="expiredToastContainer" style="z-index:1080;"></div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
@@ -268,7 +268,72 @@
             }
         });
     </script>
+    @if (User.Identity!.IsAuthenticated && (User.IsInRole("Admin") || User.IsInRole("SecurityOfficer") || User.IsInRole("Guard")))
+    {
+        <script>
+            (function () {
+                var storageKey = 'expiredAlertsShown';
 
+                function getShownSet() {
+                    try {
+                        return new Set(JSON.parse(sessionStorage.getItem(storageKey) || '[]'));
+                    } catch (e) {
+                        return new Set();
+                    }
+                }
+
+                function saveShownSet(set) {
+                    sessionStorage.setItem(storageKey, JSON.stringify(Array.from(set)));
+                }
+
+                function showToast(item) {
+                    var container = document.getElementById('expiredToastContainer');
+                    var toastEl = document.createElement('div');
+                    toastEl.className = 'toast align-items-center text-white bg-danger border-0 mb-2';
+                    toastEl.setAttribute('role', 'alert');
+                    toastEl.innerHTML =
+                        '<div class="d-flex">' +
+                        '<div class="toast-body">' +
+                        '<i class="fa-solid fa-triangle-exclamation"></i> کلید <strong>' + item.keyCode + '</strong> (' + item.roomName + ' — ' + item.buildingName + ') منقضی شد!' +
+                        '<br><small>تحویل‌گیرنده: ' + item.receiverName + '</small>' +
+                        '</div>' +
+                        '<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>' +
+                        '</div>';
+                    container.appendChild(toastEl);
+                    var toast = new bootstrap.Toast(toastEl, { delay: 10000 });
+                    toast.show();
+                    toastEl.addEventListener('hidden.bs.toast', function () { toastEl.remove(); });
+                }
+
+                function checkExpired() {
+                    fetch('/Notifications/ExpiredKeys')
+                        .then(function (r) { return r.ok ? r.json() : []; })
+                        .then(function (data) {
+                            var shown = getShownSet();
+                            var currentIds = new Set(data.map(function (d) { return d.id; }));
+
+                            data.forEach(function (item) {
+                                if (!shown.has(item.id)) {
+                                    showToast(item);
+                                    shown.add(item.id);
+                                }
+                            });
+
+                            // اگه کلیدی بازگردانده شد، از لیست «دیده‌شده» حذفش کن
+                            Array.from(shown).forEach(function (id) {
+                                if (!currentIds.has(id)) shown.delete(id);
+                            });
+
+                            saveShownSet(shown);
+                        })
+                        .catch(function () { /* silent fail */ });
+                }
+
+                checkExpired();
+                setInterval(checkExpired, 30000); // هر ۳۰ ثانیه چک می‌کنه
+            })();
+        </script>
+    }
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
